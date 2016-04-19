@@ -22,12 +22,12 @@ b.	Penginputan Data Algoritma Genetik, terdiri dari 5 form utama yang wajib diis
 •	Probabilitas Crossover. User menentukan berapa persentase (%) crossover yang akan dilakukan.
 
 3.	Memo ; terbagi dalam 2 bagian utama dengan masing-masing fungsinya. Yaitu : 
-a.	Memo Hasil, digunakan untuk manampilkan data barang-barang terpilih yang dapat dimasukan dalam media penampung. Memo ini terletak pada bagian kanan atas pada program. 
-b.	Memo Proses, digunakan untuk menampilkan proses algoritma genetik dalam menentukan solusi knapsack problem. Adapun informasi-informasi yang termuat didalamnya yaitu : informasi Kromosom, Bobot masing-masing Kromosom, Nilai Fitness Kromosom, Kromosom Hasil Crossover, Kromosom Hasil Mutasi, Optimasi Kromosom per Generasi dan Optimasi Kromosom Terbaik untuk keseluruhan Generasi. 
+a.	Memo Hasil : digunakan untuk manampilkan data barang-barang terpilih yang dapat dimasukan dalam media penampung. Memo ini terletak pada bagian kanan atas pada program. 
+b.	Memo Proses : digunakan untuk menampilkan proses algoritma genetik dalam menentukan solusi knapsack problem. Adapun informasi-informasi yang termuat didalamnya yaitu : informasi Kromosom, Bobot masing-masing Kromosom, Nilai Fitness Kromosom, Kromosom Hasil Crossover, Kromosom Hasil Mutasi, Optimasi Kromosom per Generasi dan Optimasi Kromosom Terbaik untuk keseluruhan Generasi. 
 
-CARA PENGGUNAAN 
+CARA PENGGUNAAN : 
 Langkah pertama yang harus dilakukan oleh user untuk menjalankan program aplikasi “Genetic Algorithm – Knapsack Problem” adalah dengan membuka file “KnapsackProblem.exe”. Setelah muncul tampilan awal program, user dapat menginput data secara manual dengan memasukan data pada form barang dan menekan tombol “Tambah”, atau menginput data barang secara otomatis menggunakan tombol “Reload” atau “Refresh”. Sebelum memulai proses user harus menginput jumlah Maksimum kapasitas daya tampung, jumlah populasi, jumlah generasi, presentasi mutasi dan presentasi crossover yang akan dilakukan. Setelah semuanya sudah lengkap, maka user dapat menjalankan program dengan menekan tombol “Mulai Proses”. User selanjutnya menunggu hingga proses selesai maka pada program akan ditampilkan hasil barang-barang yang terpilih dan proses algoritma genetiknya. Lamanya proses bergantung pada banyaknya data inputan, jumlah populasi dan generasi yang digunakan, semakin banyak populasi, generasi ataupun data yang digunakan, maka untuk memproses hasil akan membutuhkan waktu yang lebih lama. 
 
-OUTPUT
+OUTPUT : 
 Hasil dari program aplikasi ini tidak bersifat tetap, dikarenakan proses random yang digunakan membuat hasil dari program ini sulit ditebak. Namun tentunya pada program akan memberikan solusi yang diinginkan. Apabila jumlah kapasitas yang diinputkan terlalu kecil dan dengan jumlah generasi yang digunakan juga sedikit maka kemungkinan solusi tidak ditemukan. 
 
