@@ -1,0 +1,528 @@
+unit Knapsack;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, sLabel, Buttons, sSpeedButton, sSkinManager, Spin, ExtCtrls,
+  sButton, Grids, ComCtrls, strutils, acProgressBar;
+
+type
+  TForm1 = class(TForm)
+    sLabelFX8: TsLabelFX;
+    sLabelFX9: TsLabelFX;
+    GroupBox1: TGroupBox;
+    Label1: TLabel;
+    daya: TSpinEdit;
+    Label2: TLabel;
+    GroupBox2: TGroupBox;
+    Label3: TLabel;
+    Label4: TLabel;
+    Label5: TLabel;
+    berat: TSpinEdit;
+    barang: TEdit;
+    harga: TSpinEdit;
+    Label6: TLabel;
+    Label7: TLabel;
+    StringGrid1: TStringGrid;
+    Button1: TButton;
+    Button2: TButton;
+    Button3: TButton;
+    GroupBox3: TGroupBox;
+    Memo1: TMemo;
+    Button4: TButton;
+    GroupBox4: TGroupBox;
+    Label8: TLabel;
+    Label9: TLabel;
+    Label10: TLabel;
+    Label11: TLabel;
+    StatusBar1: TStatusBar;
+    Memo2: TMemo;
+    Label12: TLabel;
+    Label13: TLabel;
+    Label14: TLabel;
+    Label15: TLabel;
+    popsize: TSpinEdit;
+    generasi: TSpinEdit;
+    mutasi: TSpinEdit;
+    cross: TSpinEdit;
+    Label16: TLabel;
+    Label17: TLabel;
+    Button5: TButton;
+    sSkinManager1: TsSkinManager;
+    sProgressBar1: TsProgressBar;
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    procedure clr;
+    procedure reload;
+    procedure inisialisasi(var da:integer);
+    procedure fitnes(var f:string; var da,u:integer);
+    procedure seleksi(var g,ps,ps2:integer);
+    procedure crossovr(var sA,sB:string; var bb,bc,bd:integer);
+    procedure mutas(var ba,bb,bc,bd,be,dts:integer);
+    procedure stat(var ba,p :integer;var st:boolean);
+    procedure input;
+  end;
+
+var
+  Form1: TForm1;
+  kdat:string;
+  dat,totfit,pop,pops,gen,btsgen,btsm,btm,kro,mut,cros,kv,kw,gs,c2:longint;
+  fit,ran,prob,komu:array[1..20000] of double;
+  krom,par,kand:array[1..20000] of string;
+  gnr:array[0..2000,1..20000] of string;
+  v,w:array[1..2000,1..20000] of longint;
+  benda,gnr2:array[1..20000] of string;
+  popunggul:string;
+  hrg,brt,v2,w2:array[1..2000] of longint;
+  ts:boolean;
+
+
+implementation
+
+{$R *.dfm}
+
+
+procedure tform1.input;
+var i,j:integer;
+begin
+   j:=stringgrid1.RowCount;
+   for i := 1 to j-1 do
+   begin
+     hrg[i]:=strtoint(stringgrid1.Cells[3,i]);
+     brt[i]:=strtoint(stringgrid1.Cells[2,i]);
+     benda[i]:=stringgrid1.Cells[1,i];
+   end;
+   dat:=stringgrid1.RowCount-1;
+end;
+
+procedure tform1.stat(var ba,p: Integer; var st:boolean);
+var i,j,vs,ws:integer;
+ds:string;
+begin
+
+  ds:=''; vs:=0; ws:=0;
+  for j := 1 to p do
+  begin
+    if (w[ba,j]>=1) then
+    begin
+       if v[ba,j]>vs then
+       begin
+          ds:=gnr[ba,j];
+          vs:=v[ba,j];
+          ws:=w[ba,j];
+       end;
+    end;
+  end;
+  memo1.Lines.Text:=memo1.Lines.Text+#13+'Optimasi Pada Generasi ke-'+inttostr(ba)+', Pada Kromosom :'+ds+' : '+' Bobot : '+inttostr(ws)+' Harga : '+inttostr(vs)+#13;
+
+  if vs>kv then
+       begin
+          kdat:=ds;
+          kv:=vs;
+          kw:=ws;
+          st:=true;
+          gs:=ba;
+          ts:=true;
+       end;
+
+  if ts=true then
+  begin memo1.Lines.Text:=memo1.Lines.Text+'===================================='+#13;
+  memo1.Lines.Text:=memo1.Lines.Text+'Optimasi Terbaik Pada Generasi ke-'+inttostr(gs)+' : '+#13+'Individu : '+kdat+' Bobot : '+inttostr(kw)+' Harga : '+inttostr(kv)+#13;
+  memo1.Lines.Text:=memo1.Lines.Text+'===================================='+#13;
+  end;
+end;
+
+procedure tform1.mutas(var ba,bb,bc,bd,be,dts:integer);
+var i,j,h,i2,bl,bl2:integer;
+s:string;
+begin
+   randomize;
+   h:=bc*2;
+   memo1.lines.text:=memo1.lines.text+'Mutasi : '+#13;
+   for i := 1 to bd do
+   begin
+     s:='';
+     j:=random(ba)+1;
+     s:=gnr[bb,j]; bl:=random(dts)+1;
+     if s[bl]='1' then s[bl]:='0' else
+     if s[bl]='0' then s[bl]:='1';
+     gnr2[h+i]:=s;
+     memo1.lines.text:=memo1.lines.text+gnr2[h+i]+' ';
+   end;
+   memo1.Lines.Text:=memo1.Lines.Text+#13;
+   memo1.Lines.Text:=memo1.Lines.Text+'===================================='+#13;
+   {====================Perhitungan Fitness untuk Kandidat Individu Baru================}
+   for i := 1 to ba do
+   begin
+     gnr2[h+bd+i]:=gnr[bb,i];
+   end;
+
+   for i := 1 to be do
+   begin
+     s:=gnr2[i];
+     fitnes(s,dat,i);
+   end;
+end;
+
+procedure tform1.crossovr(var sA,sB:string;var bb,bc,bd:integer);
+var i,n,m:integer;
+tA,tB:string;
+begin
+  randomize;
+  m:=bd-1;
+  n:=random(m)+1; i:=bd-n;
+  ta:=''; tb:='';
+  if i<>0 then
+  begin
+    ta:=ta+leftstr(sA,n)+rightstr(sB,i);
+    tb:=tb+leftstr(sB,n)+rightstr(sA,i);
+  end else
+  begin
+    ta:=sA; tb:=sB;
+  end;
+  gnr2[bb+bc]:=ta;
+  gnr2[bb+bc+1]:=tb;
+  memo1.Lines.Text:=memo1.Lines.Text+' '+gnr2[bb+bc]+' '+gnr2[bb+bc+1]+#13;
+end;
+
+procedure tform1.seleksi(var g,ps,ps2:integer);
+var i,j,c,batas,hit2,t2:integer;
+hit:double; s:string;
+sta:boolean;
+begin
+  {===================ROLETTE WHEEL===================================}
+  {-----------Menghitung Total Fitness---------------------}
+  totfit:=0;
+  for i := 1 to ps do
+    begin
+      totfit:=totfit+v2[i];
+    end;
+
+  {----------Menghitung Nilai Probabilitas Setiap Individu---------------------------}
+  for i := 1 to ps do
+  begin
+     prob[i]:=strtofloat(formatfloat('0.###',(v2[i]/totfit)));
+   end;
+
+  {------------Menghitung Probabilitas Komulatif Kromosom------------------------}
+  for i := 1 to ps do
+  begin
+    hit:=0;
+    for j := 1 to i do
+    begin
+       hit:=hit+prob[j];
+    end;
+    komu[i]:=hit;
+  end;
+
+  {-------------------Membangkitkan Nilai Random---------------------}
+  hit2:=round(hit)*100;
+
+  randomize;
+  for i:= 1 to ps do
+  begin
+    hit:=strtofloat(formatfloat('0.###',(random(hit2)/100)));
+    ran[i]:=hit;
+  end;
+
+  { -------------------Mengurutkan Parent----------------------------}
+  g:=g+1;
+  for i := 1 to ps2 do
+  begin
+    j:=0; c:=0; s:='';
+     repeat
+       inc(j);
+       if (ran[i]<=komu[j]) then begin c:=1; end;
+     until c=1;
+     if c=1 then
+     begin
+        s:=gnr2[j];
+        gnr[g,i]:=s;
+        v[g,i]:=v2[j];
+        w[g,i]:=w2[j];
+     end;
+  end;
+
+  memo1.Lines.Text:=memo1.Lines.Text+#13+#13;
+  {========================Tampilkan Populasi Baru, Fitness, dan Bobot=====================}
+  memo1.Lines.Text:=memo1.Lines.Text+'Populasi Generasi ke-'+inttostr(g)+#13;
+  memo1.Lines.Text:=memo1.Lines.Text+'*************************'+#13+#13;
+  for i := 1 to ps2 do
+  begin
+    memo1.Lines.Text:=memo1.Lines.Text+gnr[g,i]+' , Fitness : '+inttostr(v[g,i])+' , Bobot : '+inttostr(w[g,i])+#13;
+  end;
+  {-------------------------Pengecekan Solusi Optimal Per Generasi-------------------------------}
+  stat(g,ps2,sta);
+  if sta=true then
+  begin
+    t2:=0; memo2.Lines.Text:='';
+    for i := 1 to dat do
+    begin
+      if (kdat[i]='1') then
+      begin   memo2.Lines.Text:=memo2.Lines.Text+' * '+stringgrid1.Cells[1,i]+#13; inc(t2); end;
+    end;
+    label9.Caption:=inttostr(kw)+' Kg';
+    label11.Caption:='Rp. '+inttostr(kv);
+    memo2.Lines.Text:='Jumlah Benda Yang Dapat Dimasukan: '+inttostr(t2)+' Buah, Yaitu : '+#13+memo2.Lines.Text;
+  end;
+end;
+
+
+procedure tform1.fitnes(var f: string; var da,u:integer);
+var i,j,fitA,bitA,d:integer;
+begin
+    fitA:=0; bitA:=0; d:=daya.Value;
+    for i := 1 to da do
+    begin
+      fitA:=fitA+((strtoint(f[i]))*hrg[i]);
+      bitA:=bitA+((strtoint(f[i]))*brt[i]);
+    end;
+    v2[u]:=fitA;
+    if bitA>d then w2[u]:=d-bitA else  w2[u]:=bitA;
+end;
+
+procedure tform1.inisialisasi(var da:integer);
+var i,j,j2,k,t2:integer;
+tam:string; sta:boolean;
+begin
+  randomize;
+  gen:=0; j:=0;
+  repeat
+    tam:='';
+    for i := 1 to da do
+    begin
+      tam:=tam+inttostr(random(2));
+    end;
+    inc(j);
+    gnr[gen,j]:=tam;
+  until (j>=popsize.Value);
+  pop:=popsize.Value;
+
+
+  memo1.Lines.Text:=memo1.Lines.Text+'Populasi Generasi ke-'+inttostr(gen)+#13;
+  memo1.Lines.Text:=memo1.Lines.Text+'-------------------------'+#13+#13;
+  totfit:=0; tam:='';
+  for i := 1 to pop do
+    begin
+      tam:=gnr[gen,i];
+      fitnes(tam,dat,i);
+      v[gen,i]:=v2[i];
+      w[gen,i]:=w2[i];
+    end;
+
+  {========================Tampilkan Populasi Baru, Fitness, dan Bobot=====================}
+  for i := 1 to pop do
+  begin
+    memo1.Lines.Text:=memo1.Lines.Text+gnr[gen,i]+' , Fitness : '+inttostr(v[gen,i])+' , Bobot : '+inttostr(w[gen,i])+#13;
+  end;
+  {-------------------------Pengecekan Solusi Optimal Per Generasi-------------------------------}
+  stat(gen,pop,sta);
+  if sta=true then
+  begin
+    t2:=0; memo2.Lines.Text:='';
+    for i := 1 to dat do
+    begin
+      if (kdat[i]='1') then
+      begin   memo2.Lines.Text:=memo2.Lines.Text+' * '+stringgrid1.Cells[1,i]+#13; inc(t2); end;
+    end;
+    label9.Caption:=inttostr(kw)+' Kg';
+    label11.Caption:='Rp. '+inttostr(kv);
+    memo2.Lines.Text:='Jumlah Benda Yang Dapat Dimasukan: '+inttostr(t2)+' Buah, Yaitu : '+#13+memo2.Lines.Text;
+  end;
+end;
+
+procedure tform1.reload;
+var
+teks:Textfile;
+p,j,i,i2,c,c2:integer;
+tamp,tamp2:string;
+begin
+  clr;
+  assignfile(teks,ExtractFilePath(ParamStr(0))+'DataBarang.txt');
+  reset(teks);
+  c:=0;tamp:=''; tamp2:='';
+  stringgrid1.RowCount:=21;
+  stringgrid1.Cells[0,0]:='No';
+  stringgrid1.Cells[1,0]:='Nama Barang';
+  stringgrid1.Cells[2,0]:='Berat Barang';
+  stringgrid1.Cells[3,0]:='Harga Barang';
+
+  while not eof(teks) do
+  begin
+     readln(teks,tamp);
+     inc(c);
+     stringgrid1.Cells[0,c]:=inttostr(c);
+     if tamp<>'' then
+     begin
+       c2:=0; i2:=1;
+       for i := 1 to length(tamp) do
+       begin
+         if (tamp[i]=' ') or (tamp[i]='') or (tamp[i]=';') then
+         begin
+            for j := i2 to i - 1 do
+            begin
+              tamp2:=tamp2+tamp[j];
+            end;
+            inc(c2);
+            if c2=1 then begin benda[c]:=tamp2; stringgrid1.Cells[1,c]:=tamp2;  end else
+            if c2=2 then begin brt[c]:=strtoint(tamp2); stringgrid1.Cells[2,c]:=tamp2; end else
+            if c2=3 then begin hrg[c]:=strtoint(tamp2); stringgrid1.Cells[3,c]:=tamp2; end;
+            tamp2:=''; i2:=i+1;
+         end;
+       end;
+       tamp:='';
+     end;
+  end;
+  closefile(teks);
+  dat:=c;
+end;
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+   if barang.Text='' then messagedlg('Silahkan Masukan Nama Barang',mtinformation,[mbOK],0) else
+   if berat.Value=0 then messagedlg('Silahkan Masukan Jumlah Berat Barang Per Satuan Yang Bukan 0',mtinformation,[mbOK],0) else
+   if harga.Value=0 then messagedlg('Silahkan Masukan Harga Barang Per Satuan Yang Bukan 0',mtinformation,[mbOK],0) else
+   begin
+      dat:=dat+1;
+      stringgrid1.RowCount:=dat+1;
+      stringgrid1.Cells[0,dat]:=inttostr(dat);
+      stringgrid1.Cells[1,dat]:=barang.Text; benda[dat]:=barang.Text;
+      stringgrid1.Cells[2,dat]:=berat.Text; brt[dat]:=berat.Value;
+      stringgrid1.Cells[3,dat]:=harga.Text; hrg[dat]:=harga.Value;
+   end;
+end;
+
+procedure TForm1.Button2Click(Sender: TObject);
+begin
+  clr;
+  dat:=4;
+  popsize.Value:=10;
+  mutasi.Value:=40;
+  cross.Value:=20;
+  daya.Value:=10;
+  stringgrid1.RowCount:=dat+1;
+  stringgrid1.Cells[0,1]:='1'; stringgrid1.Cells[0,2]:='2'; stringgrid1.Cells[0,3]:='3'; stringgrid1.Cells[0,4]:='4';
+  stringgrid1.Cells[1,1]:='BendaA'; stringgrid1.Cells[1,2]:='BendaB'; stringgrid1.Cells[1,3]:='BendaC'; stringgrid1.Cells[1,4]:='BendaD';
+  stringgrid1.Cells[2,1]:='3'; stringgrid1.Cells[2,2]:='2'; stringgrid1.Cells[2,3]:='5'; stringgrid1.Cells[2,4]:='4';
+  stringgrid1.Cells[3,1]:='6'; stringgrid1.Cells[3,2]:='5'; stringgrid1.Cells[3,3]:='9'; stringgrid1.Cells[3,4]:='8';
+end;
+
+procedure TForm1.Button3Click(Sender: TObject);
+var i,j:integer;
+begin
+  //clr;
+  j:=20 div 10;
+  i:=200 div 100;
+  memo2.Lines.Text:=memo2.Lines.Text+inttostr(i)+' '+inttostr(j);
+end;
+
+procedure TForm1.Button4Click(Sender: TObject);
+var i,ja,m,n,bts,bts3,bts2,pp,pp2:integer;
+dA,dB,pj:string;
+begin
+
+  mut:=mutasi.Value;
+  ts:=false;
+  pp:=popsize.Value;
+  sprogressbar1.Hide;
+  cros:=cross.Value;
+  dat:=stringgrid1.RowCount-1;
+  btsgen:=generasi.Value;
+  if dat<3 then messagedlg('Silahkan Tambahkan Data, Sebelum Menekan Tombol Proses',mtinformation,[mbOK],0) else
+  begin
+  if daya.Value=0 then messagedlg('Silahkan Masukan Nilai Batas Tampung',mtinformation,[mbOK],0) else
+  if popsize.Value=0 then messagedlg('Silahkan Masukan Nilai Batas Ukuran Populasi',mtinformation,[mbOK],0)else
+  if generasi.Value=0 then messagedlg('Silahkan Masukan Nilai Batas Generasi',mtinformation,[mbOK],0)else
+  if cross.Value=0 then messagedlg('Silahkan Masukan Nilai Persentase Crossover',mtinformation,[mbOK],0) else
+  if mutasi.Value=0 then messagedlg('Silahkan Masukan Nilai Persentase Mutasi',mtinformation,[mbOK],0)else
+  if ((mut*dat*popsize.value) div 100)=0 then messagedlg('Proses Crossover Pada Algen Tidak Dapat Dilakukan, Angka Persentase Sangat Kecil'+#13+'Silahkan Masukan Persentase Yang Lebih Tinggi',mtinformation,[mbOK],0) else
+  begin
+  memo2.Lines.Text:='';
+  sprogressbar1.Show;  sprogressbar1.Position:=0;
+  kv:=0; kw:=0; gs:=0;kdat:=''; btm:=0;
+  label9.Caption:='0 Kg';
+  label11.Caption:='Rp. 0';
+  memo1.Lines.Text:='';
+  memo1.Lines.Text:=memo1.Lines.Text+'GENETIC ALGORITHM PROCESS'+#13+'=========================='+#13+#13;
+  input;
+  {--------Inisialisasi----------------}
+  inisialisasi(dat);   gen:=0;
+  btm:=(pp*cros); pj:=inttostr(btm);
+  if (length(pj)=2) then
+     if (btm>50) then btm:=1 else btm:=0 else
+  if length(pj)>2 then btm:=btm div 100;
+  btm:=btm div 2;
+
+  pp2:=pop*mut; pj:=inttostr(pp2);
+  if (length(pj)=2) then
+     if (pp2>50) then pp2:=1 else pp2:=0 else
+  if length(pj)>2 then pp2:=pp2 div 100;
+  pops:=pp+pp2+(btm*2);
+
+  repeat
+      memo1.Lines.Text:=memo1.Lines.Text+'Cross :'+#13;
+      da:='';db:=''; m:=0; ja:=0; n:=0;
+      for i := 1 to btm do
+      begin
+        ja:=random(pp)+1;
+        n:=random(pp)+1;
+        da:=gnr[gen,ja];
+        db:=gnr[gen,n];
+        memo1.Lines.Text:=memo1.Lines.Text+'('+da+','+db+') = ';
+        crossovr(da,db,i,m,dat);
+        m:=m+1;
+      end;
+
+      mutas(pp,gen,btm,pp2,pops,dat);
+      seleksi(gen,pops,pp);
+      sprogressbar1.Position:=sprogressbar1.Position+random(30);
+      if sprogressbar1.Position>=100 then sprogressbar1.Position:=0;
+    until (gen>=btsgen);
+    sprogressbar1.position:=100;
+    if ts=false then begin memo2.Lines.Text:='Solusi Tidak Ditemukan'+#13+'Silahkan Ulangi Proses'; end;
+  end;
+  end;
+end;
+
+procedure TForm1.Button5Click(Sender: TObject);
+begin
+  clr;
+  reload;
+end;
+
+procedure tform1.clr;
+begin
+  barang.Text:='';
+  daya.Value:=0;
+  berat.Value:=0;
+  harga.Value:=0;
+  generasi.Value:=0;
+  popsize.Value:=0;
+  mutasi.Value:=0;
+  cross.Value:=0;
+  memo1.Lines.Text:='';
+  memo2.Lines.Text:='';
+  stringgrid1.RowCount:=1;
+  sprogressbar1.Hide;
+  stringgrid1.Cells[0,0]:='No';
+  stringgrid1.Cells[1,0]:='Nama Barang';
+  stringgrid1.Cells[2,0]:='Berat';
+  stringgrid1.Cells[3,0]:='Harga';
+end;
+
+procedure TForm1.FormShow(Sender: TObject);
+begin
+   dat:=0;
+   clr;
+end;
+
+end.
