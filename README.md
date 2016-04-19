@@ -2,8 +2,9 @@
 Program Aplikasi Genetik Algoritma dan Review Jurnal International
 __________________________________________________________________
 
-TOOLS
+PROGRAM APLIKASI
 program aplikasi “Genetic Algorithm – Knapsack Problem”. Pada program terdiri dari 5 tombol utama dan 8 form untuk mengisi data input sebelum melakukan proses dan 3 memo yang digunakan untuk menampilkan hasil dan proses selama program berlangsung secara detail. Adapun masing-masing komponen dan fungsi detailnya:
+1. Tools Aplikasi : 
 1.	Tombol ; terdiri dari 5 tombol utama yaitu Reload, Hapus, Refresh, Tambah dan Mulai Proses. 
 a.	Reload ; digunakan untuk memasukan data dari file *.txt (DataBarang.txt) ke dalam tabel program untuk dieksekusi
 Note : Data pada file DataBarang.txt dapat ditambahkan secara manual. 
